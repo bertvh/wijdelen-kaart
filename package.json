@@ -50,6 +50,8 @@
 		"vitest-browser-svelte": "^1.1.0"
 	},
 	"dependencies": {
+		"@fontsource-variable/bricolage-grotesque": "^5.2.10",
+		"@lucide/svelte": "^0.547.0",
 		"@types/papaparse": "^5.3.16",
 		"maplibre-gl": "^5.9.0",
 		"papaparse": "^5.5.3"

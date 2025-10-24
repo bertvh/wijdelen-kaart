@@ -1,3 +1,6 @@
+@import '@fontsource-variable/bricolage-grotesque';
+@import '@fontsource-variable/bricolage-grotesque/wdth.css';
+
 @import 'tailwindcss';
 
 @plugin '@tailwindcss/forms';
@@ -5,4 +8,5 @@
 
 @import '@skeletonlabs/skeleton';
 @import '@skeletonlabs/skeleton-svelte';
-@import '@skeletonlabs/skeleton/themes/cerberus';
+
+@import './wijdelen-theme.css';
