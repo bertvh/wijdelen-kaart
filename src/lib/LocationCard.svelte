@@ -5,8 +5,6 @@
 		city?: string;
 		category?: string;
 		emoji?: string;
-		latitude: number;
-		longitude: number;
 	}
 
 	interface Props {

@@ -1,6 +1,7 @@
 import { readFile } from 'fs/promises';
 import { join } from 'path';
 import Papa from 'papaparse';
+import type { FeatureCollection, Feature, Point } from 'geojson';
 
 // Category to emoji mapping
 const categoryEmojiMap: Record<string, string> = {
@@ -45,7 +46,38 @@ interface Location {
 	emoji: string;
 }
 
-export async function load(): Promise<{ locations: Location[]; categories: string[] }> {
+function locationsToGeoJson(locations: Location[]): FeatureCollection<Point> {
+	const features: Feature<Point>[] = locations.map((location, index) => ({
+		type: 'Feature',
+		id: index,
+		geometry: {
+			type: 'Point',
+			coordinates: [location.longitude, location.latitude]
+		},
+		properties: {
+			name: location.name,
+			description: location.description,
+			address: location.address,
+			postalCode: location.postalCode,
+			city: location.city,
+			email: location.email,
+			url: location.url,
+			image: location.image,
+			category: location.category,
+			emoji: location.emoji
+		}
+	}));
+
+	return {
+		type: 'FeatureCollection',
+		features
+	};
+}
+
+export async function load(): Promise<{
+	categories: string[];
+	geojson: FeatureCollection<Point>;
+}> {
 	const csvPath = join(process.cwd(), 'static', 'data', 'asadventure.csv');
 	const csvContent = await readFile(csvPath, 'utf-8');
 
@@ -105,5 +137,7 @@ export async function load(): Promise<{ locations: Location[]; categories: strin
 		locations.map((loc) => loc.category)
 	);
 
-	return { locations, categories };
+	const geojson = locationsToGeoJson(locations);
+
+	return { categories, geojson };
 }
