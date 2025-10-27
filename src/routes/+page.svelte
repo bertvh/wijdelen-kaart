@@ -127,7 +127,6 @@
 								<LocationCard
 									location={{
 										name: feature.properties?.name || '',
-										description: feature.properties?.description || '',
 										city: feature.properties?.city || '',
 										category: feature.properties?.category || '',
 										emoji: feature.properties?.emoji || ''

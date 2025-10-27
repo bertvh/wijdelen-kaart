@@ -96,14 +96,16 @@
 			{#if feature.properties?.url}
 				<div class="flex items-center gap-2 text-sm">
 					<Globe size={16} class="shrink-0 text-surface-600" />
+					<!-- eslint-disable svelte/no-navigation-without-resolve -->
 					<a
 						href={feature.properties.url}
 						target="_blank"
-						rel="noopener noreferrer"
+						rel="external"
 						class="text-primary-500 underline hover:text-primary-600"
 					>
 						{feature.properties.url.replace(/^https?:\/\//, '')}
 					</a>
+					<!-- eslint-enable svelte/no-navigation-without-resolve -->
 				</div>
 			{/if}
 		</div>
