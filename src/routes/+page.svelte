@@ -6,7 +6,7 @@
 	import CategoryFilter from '$lib/CategoryFilter.svelte';
 	import LocationPopup from '$lib/LocationPopup.svelte';
 	import { CircleQuestionMark, X } from '@lucide/svelte';
-	import { type Point, type Feature } from 'geojson';
+	import type { Point, Feature } from 'geojson';
 	import { fade } from 'svelte/transition';
 
 	interface Props {

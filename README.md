@@ -1,18 +1,8 @@
-# sv
+# wijdelen-kaart
 
-Everything you need to build a Svelte project, powered by [`sv`](https://github.com/sveltejs/cli).
+An interactive map application for discovering shared rental locations and services. This Svelte-based web application provides users with a visual interface to explore and filter rental opportunities in their area.
 
-## Creating a project
-
-If you're seeing this, you've probably already done this step. Congrats!
-
-```sh
-# create a new project in the current directory
-npx sv create
-
-# create a new project in my-app
-npx sv create my-app
-```
+🌐 **Live Application**: [kaart.wijdelen.be](https://kaart.wijdelen.be)
 
 ## Developing
 

@@ -88,12 +88,6 @@ export async function load(): Promise<{
 		transformHeader: (header) => header.trim()
 	});
 
-	// Debug: log the first row to see what fields we have
-	if (parseResult.data.length > 0) {
-		console.log('First CSV row:', parseResult.data[0]);
-		console.log('Available keys:', Object.keys(parseResult.data[0]));
-	}
-
 	// Transform and validate the data
 	const locations: Location[] = parseResult.data
 		.map((row) => {
