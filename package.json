@@ -58,6 +58,6 @@
         "papaparse": "^5.5.3"
     },
     "engines": {
-        "node": "24.x"
+        "node": "22.x"
     }
 }
