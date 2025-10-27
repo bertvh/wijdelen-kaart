@@ -10,3 +10,4 @@
 @import '@skeletonlabs/skeleton-svelte';
 
 @import './wijdelen-theme.css';
+@import 'maplibre-gl/dist/maplibre-gl.css';
