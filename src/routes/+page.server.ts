@@ -1,7 +1,6 @@
-import { readFile } from 'fs/promises';
-import { join } from 'path';
 import Papa from 'papaparse';
 import type { FeatureCollection, Feature, Point } from 'geojson';
+import csvData from '$lib/data/asadventure.csv?raw';
 
 // Category to emoji mapping
 const categoryEmojiMap: Record<string, string> = {
@@ -78,11 +77,8 @@ export async function load(): Promise<{
 	categories: string[];
 	geojson: FeatureCollection<Point>;
 }> {
-	const csvPath = join(process.cwd(), 'static', 'data', 'asadventure.csv');
-	const csvContent = await readFile(csvPath, 'utf-8');
-
 	// Parse CSV using papaparse
-	const parseResult = Papa.parse<LocationCsvRow>(csvContent, {
+	const parseResult = Papa.parse<LocationCsvRow>(csvData, {
 		header: true,
 		skipEmptyLines: true,
 		transformHeader: (header) => header.trim()
