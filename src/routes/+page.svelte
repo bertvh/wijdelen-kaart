@@ -8,6 +8,7 @@
 	import { CircleQuestionMark, X } from '@lucide/svelte';
 	import type { Point, Feature } from 'geojson';
 	import { fade } from 'svelte/transition';
+	import type { OnlineOnlyEntry } from './+page.server';
 
 	interface Props {
 		data: PageData;
@@ -25,8 +26,8 @@
 	// Track selected categories (will be managed by CategoryFilter component)
 	let selectedCategories = $state<string[]>([]);
 
-	// Track selected feature for floating card
-	let selectedFeature = $state<Feature<Point> | null>(null);
+	// Track selected entry for floating card (feature or online entry)
+	let selectedEntry = $state<Feature<Point> | OnlineOnlyEntry | null>(null);
 
 	// Track animation state
 	let showLocationsList = $state(false);
@@ -44,13 +45,22 @@
 					)
 	});
 
+	// Filter online-only entries based on selected categories
+	const filteredOnlineOnly = $derived(
+		selectedCategories.length === 0
+			? data.onlineOnlyEntries
+			: data.onlineOnlyEntries.filter(
+					(e) => selectedCategories.includes(e.category || '') || e.category === ''
+				)
+	);
+
 	function zoomToLocation(feature: Feature<Point>) {
 		const [lng, lat] = feature.geometry.coordinates;
 		map!.easeTo({
 			center: [lng, lat]
 		});
 		// Also select the location when zooming to it
-		selectedFeature = feature;
+		selectedEntry = feature;
 	}
 
 	async function zoomCluster(e: MapMouseEvent) {
@@ -72,18 +82,37 @@
 			if (!feature.properties?.point_count) {
 				// Use setTimeout to avoid potential state update conflicts
 				setTimeout(() => {
-					selectedFeature = feature as Feature<Point>;
+					selectedEntry = feature as Feature<Point>;
 				}, 0);
 			}
 		}
 	}
+
+	function selectOnlineOnly(entry: OnlineOnlyEntry) {
+		selectedEntry = entry;
+	}
+
+	function scrollToId(targetId: string) {
+		const el = document.getElementById(targetId);
+		if (el) {
+			el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+		}
+	}
+
+	function scrollToLocations() {
+		scrollToId('locations-list');
+	}
+
+	function scrollToOnline() {
+		scrollToId('online-list');
+	}
 </script>
 
-<div class="relative h-screen">
+<div class="relative h-screen font-light">
 	<div class="grid h-full grid-cols-1 md:grid-cols-[280px_1fr]">
 		<!-- Sidebar -->
 		<aside class="z-10 hidden h-screen flex-col bg-surface-50-950 shadow-lg md:flex">
-			<div class="border-b border-surface-500/30 p-4">
+			<div class="p-4 pb-2">
 				<div class="grid grid-cols-[1fr_auto] items-center">
 					<img src="/logo-deelkaart.png" alt="Wij Delen Deelkaart" class="h-10 object-contain" />
 					<CircleQuestionMark class="text-primary-500" size={20} />
@@ -103,17 +132,36 @@
 
 			<!-- Scrollable locations list -->
 			{#if showLocationsList}
+				<p class="px-4 pb-2 text-xs font-extralight text-surface-800-200 shadow-md">
+					{filteredGeoJson.features.length + filteredOnlineOnly.length} resultaten (
+					<a
+						href="#locations-list"
+						class="underline decoration-dotted underline-offset-2 hover:text-primary-600"
+						onclick={(e) => {
+							e.preventDefault();
+							scrollToLocations();
+						}}>{filteredGeoJson.features.length} locaties</a
+					>
+					|
+					<a
+						href="#online-list"
+						class="underline decoration-dotted underline-offset-2 hover:text-primary-600"
+						onclick={(e) => {
+							e.preventDefault();
+							scrollToOnline();
+						}}>{filteredOnlineOnly.length} online</a
+					>
+					)
+				</p>
 				<div class="flex-1 overflow-y-auto" in:fade={{ duration: 500 }}>
-					<p class="px-4 text-xs font-extralight text-surface-800-200">
-						{filteredGeoJson.features.length} locaties
-					</p>
-					<ul class="divide-y divide-surface-600">
+					<ul id="locations-list" class="divide-y divide-surface-900/10 dark:divide-surface-100/10">
 						{#each filteredGeoJson.features as feature (feature.id)}
 							<li
 								role="button"
 								tabindex="0"
-								class="w-full cursor-pointer p-4 text-left transition-colors hover:bg-primary-50-950/50 {selectedFeature?.id ===
-								feature.id
+								class="w-full cursor-pointer p-4 text-left transition-colors hover:bg-primary-50-950/50 {selectedEntry &&
+								'geometry' in selectedEntry &&
+								(selectedEntry as Feature<Point>).id === feature.id
 									? 'bg-primary-50-950 hover:bg-primary-50-950/80'
 									: ''}"
 								onclick={() => zoomToLocation(feature)}
@@ -127,20 +175,60 @@
 								<LocationCard
 									location={{
 										name: feature.properties?.name || '',
+										address: feature.properties?.address || '',
+										postalCode: feature.properties?.postalCode || '',
 										city: feature.properties?.city || '',
 										category: feature.properties?.category || '',
-										emoji: feature.properties?.emoji || ''
+										icon: feature.properties?.icon || ''
 									}}
 								/>
 							</li>
 						{/each}
+						<!-- Divider for online-only entries -->
+						{#if filteredOnlineOnly.length > 0}
+							<li id="online-list" class="sticky top-0 z-10 bg-primary-100-900/50 p-2">
+								<span class="text-surface-50-900 text-center text-xs">Online diensten</span>
+							</li>
+							{#each filteredOnlineOnly as entry (entry.id)}
+								<li
+									role="button"
+									tabindex="0"
+									class="w-full cursor-pointer p-4 text-left transition-colors hover:bg-primary-50-950/50 {selectedEntry &&
+									'id' in selectedEntry &&
+									selectedEntry.id === entry.id
+										? 'bg-primary-50-950 hover:bg-primary-50-950/80'
+										: ''}"
+									onclick={() => selectOnlineOnly(entry)}
+									onkeydown={(e) => {
+										if (e.key === 'Enter' || e.key === ' ') {
+											e.preventDefault();
+											selectOnlineOnly(entry);
+										}
+									}}
+								>
+									<LocationCard
+										location={{
+											name: entry.name,
+											city: '',
+											category: entry.category,
+											icon: entry.icon,
+											url: entry.url
+										}}
+									/>
+								</li>
+							{/each}
+						{/if}
 					</ul>
 				</div>
 			{/if}
 		</aside>
 
 		<!-- Main content -->
-		<main class="h-full overflow-hidden">
+		<main
+			class="h-full overflow-hidden transition-all duration-300 ease-in-out {!showLocationsList
+				? 'blur'
+				: ''}"
+		>
 			<MapLibre
 				style="https://tiles.openfreemap.org/styles/liberty"
 				class="h-full w-full"
@@ -219,12 +307,12 @@
 				</GeoJSONSource>
 
 				<!-- Selected location marker -->
-				{#if selectedFeature}
+				{#if selectedEntry && 'geometry' in selectedEntry}
 					<Marker
 						color="#df016c"
 						lnglat={[
-							selectedFeature.geometry.coordinates[0],
-							selectedFeature.geometry.coordinates[1]
+							(selectedEntry as Feature<Point>).geometry.coordinates[0],
+							(selectedEntry as Feature<Point>).geometry.coordinates[1]
 						]}
 					>
 						<div
@@ -237,24 +325,20 @@
 	</div>
 
 	<!-- Floating Card -->
-	{#if selectedFeature}
+	{#if selectedEntry}
 		<div class="absolute top-4 left-[296px] z-50 hidden md:block">
 			<div class="relative">
 				<button
 					onclick={() => {
-						selectedFeature = null;
+						selectedEntry = null;
 					}}
 					class="absolute -top-2 -right-2 z-20 flex h-8 w-8 items-center justify-center rounded-full bg-surface-900 text-white shadow-lg hover:bg-surface-700"
 					aria-label="Close location details"
 				>
 					<X class="pointer-events-none text-surface-500" size={16} />
 				</button>
-				<LocationPopup feature={selectedFeature} />
+				<LocationPopup entry={selectedEntry} />
 			</div>
 		</div>
 	{/if}
 </div>
-
-<style lang="postcss">
-	@reference "tailwindcss";
-</style>

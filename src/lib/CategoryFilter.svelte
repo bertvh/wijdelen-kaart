@@ -20,7 +20,7 @@
 
 	const fullText = 'Wij delen om te ';
 	const typewriterSpeed = import.meta.env.DEV ? 10 : 50; // milliseconds per character
-	const categoryDelay = import.meta.env.DEV ? 50 : 100; // milliseconds between categories
+	const categoryDelay = import.meta.env.DEV ? 15 : 100; // milliseconds between categories
 
 	// Emit changes when selectedCategories changes
 	$effect(() => {
@@ -68,7 +68,7 @@
 	}
 </script>
 
-<div class="border-b border-surface-500/30 p-4 text-primary-500">
+<div class="p-4 text-primary-500">
 	<span class="mb-3 font-light text-primary-500">{typewriterText}</span>
 	{#if showCategories}
 		<span>

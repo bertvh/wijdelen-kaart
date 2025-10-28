@@ -1,0 +1,6 @@
+name,description,email,url,image,category
+
+Peerby,Deelplatform,info@deelhub.example,https://deelhub.example,https://via.placeholder.com/320?text=DeelHub,klussen
+BikeShare Webshop,Onderdelen en accessoires voor deelfietsen,support@bikeshare.example,https://shop.bikeshare.example,https://via.placeholder.com/320?text=BikeShare,fietsen
+AdventureBox Online,Outdoor spullen voor avonturiers,hello@adventurebox.example,https://adventurebox.example,https://via.placeholder.com/320?text=AdventureBox,avonturieren
+FixIt Tools Online,Huur en koop gereedschap online,contact@fixittools.example,https://fixittools.example,https://via.placeholder.com/320?text=FixIt+Tools,verbouwen
