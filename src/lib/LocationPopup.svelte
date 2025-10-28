@@ -13,6 +13,14 @@
 
 	let { entry }: Props = $props();
 
+	let imageLoaded = $state(false);
+
+	// Reset image loaded state when entry changes
+	$effect(() => {
+		void entry;
+		imageLoaded = false;
+	});
+
 	function isFeature(e: Entry): e is Feature<Point> {
 		return (e as Feature<Point>).geometry !== undefined;
 	}
@@ -31,20 +39,8 @@
 >
 	<!-- Image Section -->
 	<div class="relative h-24 w-full overflow-hidden">
-		{#if isFeature(entry) ? entry.properties?.image : entry.image}
-			<!-- Blurred background image -->
-			<img
-				src={isFeature(entry) ? entry.properties!.image : entry.image}
-				alt=""
-				class="absolute inset-0 h-full w-full scale-110 object-cover blur-xl"
-			/>
-			<!-- Main image -->
-			<img
-				src={isFeature(entry) ? entry.properties!.image : entry.image}
-				alt={(isFeature(entry) ? entry.properties?.name : entry.name) || 'Location image'}
-				class="relative z-10 h-full w-full object-contain"
-			/>
-		{:else}
+		{#key isFeature(entry) ? entry.id : entry.id}
+			<!-- Placeholder - always shown -->
 			<div
 				class="flex h-full w-full items-center justify-center bg-linear-to-br from-primary-50 to-primary-100"
 			>
@@ -54,7 +50,33 @@
 					class="text-primary-500"
 				/>
 			</div>
-		{/if}
+
+			<!-- Image overlay - only shown when loaded successfully -->
+			{#if isFeature(entry) ? entry.properties?.image : entry.image}
+				<div
+					class="absolute inset-0 transition-opacity {imageLoaded ? 'opacity-100' : 'opacity-0'}"
+				>
+					<!-- Blurred background image -->
+					<img
+						src={isFeature(entry) ? entry.properties!.image : entry.image}
+						alt=""
+						class="absolute inset-0 h-full w-full scale-110 object-cover blur-xl"
+						onload={() => {
+							imageLoaded = true;
+						}}
+						onerror={() => {
+							imageLoaded = false;
+						}}
+					/>
+					<!-- Main image -->
+					<img
+						src={isFeature(entry) ? entry.properties!.image : entry.image}
+						alt={(isFeature(entry) ? entry.properties?.name : entry.name) || 'Location image'}
+						class="relative z-10 h-full w-full object-contain"
+					/>
+				</div>
+			{/if}
+		{/key}
 	</div>
 
 	<!-- Content Section -->

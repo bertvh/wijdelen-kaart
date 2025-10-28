@@ -114,16 +114,7 @@ export async function load(): Promise<{
 		.map((row) => {
 			const category = row.category?.trim() || '';
 			const icon = getCategoryIcon(category);
-			console.log(
-				'Processing row:',
-				row.name,
-				'category:',
-				category,
-				'icon:',
-				icon,
-				'raw category:',
-				row.category
-			);
+
 			return {
 				latitude: parseFloat(row.latitude?.trim() || '0'),
 				longitude: parseFloat(row.longitude?.trim() || '0'),
@@ -170,12 +161,6 @@ export async function load(): Promise<{
 				...onlineOnlyEntries.map((entry) => entry.category)
 			].filter((cat) => cat !== '')
 		)
-	);
-
-	console.log('Final categories:', categories);
-	console.log(
-		'All location categories:',
-		locations.map((loc) => loc.category)
 	);
 
 	const geojson = locationsToGeoJson(locations);

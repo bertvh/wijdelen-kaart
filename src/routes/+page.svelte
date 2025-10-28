@@ -14,7 +14,7 @@
 	import LocationCard from '$lib/LocationCard.svelte';
 	import CategoryFilter from '$lib/CategoryFilter.svelte';
 	import LocationPopup from '$lib/LocationPopup.svelte';
-	import { CircleQuestionMark, X } from '@lucide/svelte';
+	import { CircleQuestionMark, X, Globe } from '@lucide/svelte';
 	import type { Point, Feature } from 'geojson';
 	import { fade } from 'svelte/transition';
 	import type { OnlineOnlyEntry } from './+page.server';
@@ -130,7 +130,7 @@
 	}
 </script>
 
-<div class="relative h-screen font-light">
+<div class="relative h-dvh font-light">
 	<!-- Small screen message -->
 	<div
 		class="absolute inset-0 z-50 flex items-center justify-center bg-surface-50-950 p-8 md:hidden"
@@ -147,7 +147,7 @@
 
 	<div class="grid h-full grid-cols-1 md:grid-cols-[280px_1fr]">
 		<!-- Sidebar -->
-		<aside class="z-10 hidden h-screen flex-col bg-surface-50-950 shadow-lg md:flex">
+		<aside class="z-10 hidden h-full flex-col overflow-auto bg-surface-50-950 shadow-lg md:flex">
 			<div class="p-4 pb-2">
 				<div class="grid grid-cols-[1fr_auto] items-center">
 					<img src="/logo-deelkaart.png" alt="Wij Delen Deelkaart" class="h-10 object-contain" />
@@ -223,7 +223,9 @@
 						<!-- Divider for online-only entries -->
 						{#if filteredOnlineOnly.length > 0}
 							<li id="online-list" class="sticky top-0 z-10 bg-primary-100-900/50 p-2">
-								<span class="text-surface-50-900 text-center text-xs">Online diensten</span>
+								<span class="text-surface-50-900 flex text-center text-xs"
+									><Globe size={16} />&nbsp;Online diensten</span
+								>
 							</li>
 							{#each filteredOnlineOnly as entry (entry.id)}
 								<li
@@ -274,8 +276,8 @@
 				maxPitch={85}
 				maxBounds={bounds}
 				dragRotate={false}
+				rollEnabled={false}
 				pitchWithRotate={false}
-				touchZoomRotate={false}
 				touchPitch={false}
 				attributionControl={{ compact: true }}
 				bind:map
@@ -283,7 +285,7 @@
 			>
 				<ScaleControl />
 				<GeolocateControl />
-				<NavigationControl showCompass={false} />
+				<NavigationControl />
 				<GeoJSONSource
 					id="locations"
 					data={filteredGeoJson}
