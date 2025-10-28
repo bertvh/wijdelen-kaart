@@ -19,8 +19,8 @@
 	let visibleCategories = $state<string[]>([]);
 
 	const fullText = 'Wij delen om te ';
-	const typewriterSpeed = import.meta.env.DEV ? 10 : 75; // milliseconds per character
-	const categoryDelay = import.meta.env.DEV ? 15 : 200; // milliseconds between categories
+	const typewriterSpeed = import.meta.env.DEV ? 7.5 : 75; // milliseconds per character
+	const categoryDelay = import.meta.env.DEV ? 30.0 : 300; // milliseconds between categories
 
 	// Emit changes when selectedCategories changes
 	$effect(() => {
