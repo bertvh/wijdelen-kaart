@@ -1,5 +1,14 @@
 <script lang="ts">
-	import { MapLibre, GeoJSONSource, CircleLayer, SymbolLayer, Marker } from 'svelte-maplibre-gl';
+	import {
+		MapLibre,
+		GeoJSONSource,
+		CircleLayer,
+		SymbolLayer,
+		Marker,
+		ScaleControl,
+		GeolocateControl,
+		NavigationControl
+	} from 'svelte-maplibre-gl';
 	import type { PageData } from './$types';
 	import type { Map, MapMouseEvent, GeoJSONSource as MapLibreGeoJSONSource } from 'maplibre-gl';
 	import LocationCard from '$lib/LocationCard.svelte';
@@ -19,9 +28,22 @@
 	let map: Map | undefined = $state();
 	let source: MapLibreGeoJSONSource | undefined = $state();
 
-	let center = $state({ lng: 4.45, lat: 51.1 });
+	// Bounding box for the map (minLng, minLat, maxLng, maxLat)
+	const bounds: [[number, number], [number, number]] = [
+		[0.439453, 49.353756],
+		[8.745117, 52.062623]
+	];
+
+	let center = $state({ lng: 4.237976, lat: 51.011463 });
 	let zoom = $state(7);
 	let cursor: string | undefined = $state();
+
+	// Fit map to bounds when it loads
+	$effect(() => {
+		if (map) {
+			map.fitBounds(bounds, { padding: 200 });
+		}
+	});
 
 	// Track selected categories (will be managed by CategoryFilter component)
 	let selectedCategories = $state<string[]>([]);
@@ -109,6 +131,20 @@
 </script>
 
 <div class="relative h-screen font-light">
+	<!-- Small screen message -->
+	<div
+		class="absolute inset-0 z-50 flex items-center justify-center bg-surface-50-950 p-8 md:hidden"
+	>
+		<div class="text-center">
+			<img
+				src="/logo-deelkaart.png"
+				alt="Wij Delen Deelkaart"
+				class="mx-auto mb-6 h-12 object-contain"
+			/>
+			<p class="text-surface-900-50">Oeps .. dit werkt voorlopig enkel op iets grotere schermen</p>
+		</div>
+	</div>
+
 	<div class="grid h-full grid-cols-1 md:grid-cols-[280px_1fr]">
 		<!-- Sidebar -->
 		<aside class="z-10 hidden h-screen flex-col bg-surface-50-950 shadow-lg md:flex">
@@ -236,10 +272,18 @@
 				{center}
 				{cursor}
 				maxPitch={85}
+				maxBounds={bounds}
+				dragRotate={false}
+				pitchWithRotate={false}
+				touchZoomRotate={false}
+				touchPitch={false}
 				attributionControl={{ compact: true }}
 				bind:map
 				autoloadGlobalCss={false}
 			>
+				<ScaleControl />
+				<GeolocateControl />
+				<NavigationControl showCompass={false} />
 				<GeoJSONSource
 					id="locations"
 					data={filteredGeoJson}
