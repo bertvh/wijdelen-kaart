@@ -11,7 +11,7 @@
 	let { categories, onSelectedCategoriesChange, onAnimationComplete }: Props = $props();
 
 	// Track selected categories (initialize with all categories)
-	let selectedCategories = $state<string[]>([...categories]);
+	let selectedCategories = $state<string[]>([]);
 
 	// Animation state
 	let typewriterText = $state('');
@@ -74,11 +74,11 @@
 		<span>
 			{#each visibleCategories as category (category)}
 				<button
-					class="-mx-1 me-2 rounded px-1 text-sm font-bold transition-all hover:bg-primary-500/20 {selectedCategories.includes(
+					class="-mx-1 me-1.5 rounded px-1 text-sm font-semibold transition-all {selectedCategories.includes(
 						category
 					)
-						? 'bg-primary-500/10 opacity-100'
-						: 'opacity-50'}"
+						? 'bg-primary-500 text-surface-50 hover:bg-primary-500/90 hover:text-surface-50'
+						: 'opacity-100 hover:bg-primary-500/60 hover:text-surface-50'}"
 					onclick={() => toggleCategory(category)}
 					in:fly={{ x: -20, duration: 300 }}
 				>
