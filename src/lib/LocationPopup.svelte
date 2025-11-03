@@ -4,7 +4,7 @@
 	import { MapPin, Globe, Navigation } from '@lucide/svelte';
 	import CategoryIcon from './CategoryIcon.svelte';
 	import type { OnlineOnlyEntry } from '../routes/+page.server';
-	import { formatUrl } from './utils';
+	import { formatUrl, extractDomain, getLogoDevUrl } from './utils';
 
 	type Entry = Feature<Point> | OnlineOnlyEntry;
 
@@ -15,11 +15,22 @@
 	let { entry }: Props = $props();
 
 	let imageLoaded = $state(false);
+	let logoError = $state(false);
+	let darkMode = $state(false);
 
-	// Reset image loaded state when entry changes
+	// Detect dark mode preference
 	$effect(() => {
-		void entry;
-		imageLoaded = false;
+		if (typeof window === 'undefined') return;
+
+		const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+		darkMode = mediaQuery.matches;
+
+		const handleChange = (e: MediaQueryListEvent) => {
+			darkMode = e.matches;
+		};
+
+		mediaQuery.addEventListener('change', handleChange);
+		return () => mediaQuery.removeEventListener('change', handleChange);
 	});
 
 	function isFeature(e: Entry): e is Feature<Point> {
@@ -33,6 +44,48 @@
 		const googleMapsUrl = `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}&destination_place_id=${locationName}`;
 		window.open(googleMapsUrl, '_blank');
 	}
+
+	// Get the URL for the current entry
+	function getEntryUrl(): string | null {
+		return isFeature(entry) ? entry.properties?.url || null : entry.url || null;
+	}
+
+	// Get logo URL from logo.dev
+	function getLogoUrl(): string | null {
+		const url = getEntryUrl();
+		if (!url) return null;
+
+		const domain = extractDomain(url);
+		if (!domain) return null;
+
+		// Try WebP first, fallback to PNG if needed
+		const logoUrl = getLogoDevUrl(domain, {
+			theme: darkMode ? 'dark' : 'light',
+			format: 'webp',
+			size: 256
+		});
+
+		return logoUrl;
+	}
+
+	const logoUrl = $derived(getLogoUrl());
+	const shouldShowLogo = $derived(logoUrl && !logoError);
+
+	// Reset image loaded state when entry changes
+	$effect(() => {
+		void entry;
+		imageLoaded = false;
+		logoError = false;
+	});
+
+	// Reset error state when dark mode changes (logo URL will update automatically)
+	$effect(() => {
+		void darkMode;
+		void logoUrl;
+		// Reset error state when logo URL changes (e.g., due to theme change)
+		logoError = false;
+		imageLoaded = false;
+	});
 </script>
 
 <div
@@ -41,9 +94,12 @@
 	<!-- Image Section -->
 	<div class="relative h-24 w-full overflow-hidden">
 		{#key isFeature(entry) ? entry.id : entry.id}
-			<!-- Placeholder - always shown -->
+			<!-- Placeholder - always shown as fallback -->
 			<div
-				class="flex h-full w-full items-center justify-center bg-linear-to-br from-primary-50 to-primary-100"
+				class="flex h-full w-full items-center justify-center bg-linear-to-br from-primary-50 to-primary-100 transition-opacity {shouldShowLogo &&
+				imageLoaded
+					? 'opacity-0'
+					: 'opacity-100'}"
 			>
 				<CategoryIcon
 					iconName={(isFeature(entry) ? entry.properties?.icon : entry.icon) || 'MapPin'}
@@ -52,29 +108,42 @@
 				/>
 			</div>
 
-			<!-- Image overlay - only shown when loaded successfully -->
-			{#if isFeature(entry) ? entry.properties?.image : entry.image}
+			<!-- Logo overlay - only shown when loaded successfully -->
+			{#if shouldShowLogo}
 				<div
 					class="absolute inset-0 transition-opacity {imageLoaded ? 'opacity-100' : 'opacity-0'}"
 				>
-					<!-- Blurred background image -->
-					<img
-						src={isFeature(entry) ? entry.properties!.image : entry.image}
-						alt=""
-						class="absolute inset-0 h-full w-full scale-110 object-cover blur-xl"
-						onload={() => {
-							imageLoaded = true;
-						}}
-						onerror={() => {
-							imageLoaded = false;
-						}}
-					/>
-					<!-- Main image -->
-					<img
-						src={isFeature(entry) ? entry.properties!.image : entry.image}
-						alt={(isFeature(entry) ? entry.properties?.name : entry.name) || 'Location image'}
-						class="relative z-10 h-full w-full object-contain"
-					/>
+					<!-- Blurred background logo -->
+					<picture>
+						<source srcset={logoUrl} type="image/webp" />
+						<img
+							src={logoUrl}
+							alt=""
+							class="absolute inset-0 h-full w-full scale-110 object-cover blur-xl"
+							loading="lazy"
+							onload={() => {
+								imageLoaded = true;
+							}}
+							onerror={() => {
+								logoError = true;
+								imageLoaded = false;
+							}}
+						/>
+					</picture>
+					<!-- Main logo -->
+					<picture>
+						<source srcset={logoUrl} type="image/webp" />
+						<img
+							src={logoUrl}
+							alt={(isFeature(entry) ? entry.properties?.name : entry.name) || 'Location logo'}
+							class="relative z-10 h-full w-full object-contain p-2"
+							loading="lazy"
+							onerror={() => {
+								logoError = true;
+								imageLoaded = false;
+							}}
+						/>
+					</picture>
 				</div>
 			{/if}
 		{/key}
