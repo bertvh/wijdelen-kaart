@@ -14,7 +14,8 @@
 	import LocationCard from '$lib/LocationCard.svelte';
 	import CategoryFilter from '$lib/CategoryFilter.svelte';
 	import LocationPopup from '$lib/LocationPopup.svelte';
-	import { CircleQuestionMark, X, Globe } from '@lucide/svelte';
+	import InfoDialog from '$lib/InfoDialog.svelte';
+	import { X, Globe } from '@lucide/svelte';
 	import type { Point, Feature } from 'geojson';
 	import { fade } from 'svelte/transition';
 	import type { OnlineOnlyEntry } from './+page.server';
@@ -151,7 +152,7 @@
 			<div class="p-4 pb-2">
 				<div class="grid grid-cols-[1fr_auto] items-center">
 					<img src="/logo-deelkaart.png" alt="Wij Delen Deelkaart" class="h-10 object-contain" />
-					<CircleQuestionMark class="text-primary-500" size={20} />
+					<InfoDialog />
 				</div>
 			</div>
 
