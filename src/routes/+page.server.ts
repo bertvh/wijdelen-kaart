@@ -10,6 +10,16 @@ const categoryIconMap: Record<string, string> = {
 	sporten: 'Dumbbell',
 	fietsen: 'Bike',
 	verbouwen: 'HardHat',
+	feesten: 'PartyPopper',
+	koken: 'ChefHat',
+	reizen: 'Luggage',
+	bouwen: 'Building',
+	varen: 'Ship',
+	verwarmen: 'Flame',
+	tutteren: 'Baby',
+	kleden: 'Shirt',
+	spelen: 'Gamepad2',
+	autorijden: 'Car',
 	default: 'MapPin'
 };
 
@@ -18,8 +28,8 @@ function getCategoryIcon(category: string): string {
 }
 
 interface LocationCsvRow {
-	longitude: string;
-	latitude: string;
+	lon: string;
+	lat: string;
 	name: string;
 	description: string;
 	address: string;
@@ -116,8 +126,8 @@ export async function load(): Promise<{
 			const icon = getCategoryIcon(category);
 
 			return {
-				latitude: parseFloat(row.latitude?.trim() || '0'),
-				longitude: parseFloat(row.longitude?.trim() || '0'),
+				latitude: parseFloat(row.lat?.trim() || '0'),
+				longitude: parseFloat(row.lon?.trim() || '0'),
 				name: row.name?.trim() || '',
 				description: row.description?.trim() || '',
 				address: row.address?.trim() || '',

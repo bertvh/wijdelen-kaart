@@ -4,6 +4,7 @@
 	import { MapPin, Globe, Navigation } from '@lucide/svelte';
 	import CategoryIcon from './CategoryIcon.svelte';
 	import type { OnlineOnlyEntry } from '../routes/+page.server';
+	import { formatUrl } from './utils';
 
 	type Entry = Feature<Point> | OnlineOnlyEntry;
 
@@ -149,7 +150,7 @@
 						rel="external"
 						class="text-primary-500 underline hover:text-primary-600"
 					>
-						{(isFeature(entry) ? entry.properties!.url : entry.url).replace(/^https?:\/\//, '')}
+						{formatUrl(isFeature(entry) ? entry.properties!.url : entry.url)}
 					</a>
 					<!-- eslint-enable svelte/no-navigation-without-resolve -->
 				</div>

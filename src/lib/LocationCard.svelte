@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { MapPin, Globe } from '@lucide/svelte';
 	import CategoryIcon from './CategoryIcon.svelte';
+	import { formatUrl } from './utils';
 
 	interface Location {
 		name: string;
@@ -17,11 +18,6 @@
 	}
 
 	let { location }: Props = $props();
-
-	// Function to clean URL for display (remove protocol)
-	function cleanUrl(url: string): string {
-		return url.replace(/^https?:\/\//, '');
-	}
 </script>
 
 <div class="flex items-start justify-between text-surface-800-200">
@@ -59,7 +55,7 @@
 				<Globe size="12" class="mt-0.5 shrink-0" />
 				<!-- eslint-disable svelte/no-navigation-without-resolve -->
 				<a href={location.url} target="_blank" rel="noopener noreferrer" class="truncate anchor">
-					{cleanUrl(location.url)}
+					{formatUrl(location.url)}
 				</a>
 				<!-- eslint-enable svelte/no-navigation-without-resolve -->
 			</p>

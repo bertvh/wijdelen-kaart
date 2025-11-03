@@ -1,5 +1,22 @@
 <script lang="ts">
-	import { Mountain, Hammer, Dumbbell, Bike, HardHat, MapPin } from '@lucide/svelte';
+	import {
+		Mountain,
+		Hammer,
+		Dumbbell,
+		Bike,
+		HardHat,
+		MapPin,
+		PartyPopper,
+		ChefHat,
+		Luggage,
+		Building,
+		Ship,
+		Flame,
+		Baby,
+		Shirt,
+		Gamepad2,
+		Car
+	} from '@lucide/svelte';
 	import type { Component } from 'svelte';
 
 	interface Props {
@@ -17,7 +34,17 @@
 		Dumbbell,
 		Bike,
 		HardHat,
-		MapPin
+		MapPin,
+		PartyPopper,
+		ChefHat,
+		Luggage,
+		Building,
+		Ship,
+		Flame,
+		Baby,
+		Shirt,
+		Gamepad2,
+		Car
 	};
 
 	const IconComponent = $derived(iconMap[iconName] || MapPin);

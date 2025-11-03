@@ -222,8 +222,8 @@
 						{/each}
 						<!-- Divider for online-only entries -->
 						{#if filteredOnlineOnly.length > 0}
-							<li id="online-list" class="sticky top-0 z-10 bg-primary-100-900/50 p-2">
-								<span class="text-surface-50-900 flex text-center text-xs"
+							<li id="online-list" class="sticky top-0 z-10 bg-primary-100-900/80 p-2">
+								<span class="flex text-center text-xs font-bold text-primary-700-300"
 									><Globe size={16} />&nbsp;Online diensten</span
 								>
 							</li>
