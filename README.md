@@ -2,6 +2,8 @@
 
 An interactive map application for discovering shared rental locations and services. This Svelte-based web application provides users with a visual interface to explore and filter rental opportunities in their area.
 
+Consider this a **prototype app** - the code and app architecture are not great at the moment.
+
 🌐 **Live Application**: [kaart.wijdelen.be](https://kaart.wijdelen.be)
 
 ## Logo.dev Integration
