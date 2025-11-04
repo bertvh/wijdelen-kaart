@@ -39,6 +39,13 @@ To enable logo.dev integration, you need to set your publishable API key as an e
 
 **Note:** `.env.local` is gitignored and is for local development only. The `.env.example` file serves as a template.
 
+## Vercel Analytics & Speed Insights
+
+This application uses [Vercel Analytics](https://vercel.com/analytics) and [Vercel Speed Insights](https://vercel.com/speed-insights) to track user interactions and monitor performance metrics.
+
+- **Analytics** runs in development mode locally and production mode when deployed
+- **Speed Insights** automatically tracks Core Web Vitals and performance metrics
+
 ## Developing
 
 Once you've created a project and installed dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:
