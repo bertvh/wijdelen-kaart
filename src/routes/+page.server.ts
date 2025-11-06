@@ -20,7 +20,7 @@ const categoryIconMap: Record<string, string> = {
 	kleden: 'Shirt',
 	spelen: 'Gamepad2',
 	autorijden: 'Car',
-	default: 'MapPin'
+	default: 'ShoppingCart'
 };
 
 function getCategoryIcon(category: string): string {

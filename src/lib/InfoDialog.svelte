@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { Dialog, Portal } from '@skeletonlabs/skeleton-svelte';
-	import { CircleQuestionMark, MapPinPlus } from '@lucide/svelte';
+	import { CircleQuestionMark } from '@lucide/svelte';
 </script>
 
 <Dialog>
@@ -43,8 +43,7 @@
 									rel="noopener noreferrer"
 								>
 									Green Deal Huren &amp; Delen
-								</a>. <MapPinPlus class="inline align-text-top" size="16" /> Wil je ook zichtbaar zijn
-								op deze huur- en deelkaart?
+								</a>.<br />Wil je ook zichtbaar zijn op deze huur- en deelkaart?
 								<a class="anchor" href="https://calendly.com/hurendelen/30min" target="_blank"
 									>Maak een afspraak in ons loket.</a
 								>

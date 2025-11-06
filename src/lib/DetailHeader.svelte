@@ -63,7 +63,7 @@
 	const shouldShowLogo = $derived(logoUrl && !logoError);
 
 	function getIconName(): string {
-		return (isFeature(entry) ? entry.properties?.icon : entry.icon) || 'MapPin';
+		return (isFeature(entry) ? entry.properties?.icon : entry.icon) || 'ShoppingCart';
 	}
 
 	function getEntryName(): string {

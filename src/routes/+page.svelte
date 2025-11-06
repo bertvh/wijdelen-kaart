@@ -62,25 +62,31 @@
 	let mobileSheetState = $state<MobileSheetState>('collapsed');
 
 	// Filter GeoJSON features based on selected categories (for sidebar list)
+	// Entries with empty categories always show regardless of filter
 	const filteredGeoJson = $derived({
 		type: 'FeatureCollection' as const,
 		features:
 			selectedCategories.length === 0
 				? data.geojson.features
-				: data.geojson.features.filter(
-						(feature) =>
-							selectedCategories.includes(feature.properties?.category || '') ||
-							feature.properties?.category === ''
-					)
+				: data.geojson.features.filter((feature) => {
+						const category = feature.properties?.category || '';
+						// Always show entries with empty categories
+						if (category === '') return true;
+						return selectedCategories.includes(category);
+					})
 	});
 
 	// Filter online-only entries based on selected categories
+	// Entries with empty categories always show regardless of filter
 	const filteredOnlineOnly = $derived(
 		selectedCategories.length === 0
 			? data.onlineOnlyEntries
-			: data.onlineOnlyEntries.filter(
-					(e) => selectedCategories.includes(e.category || '') || e.category === ''
-				)
+			: data.onlineOnlyEntries.filter((e) => {
+					const category = e.category || '';
+					// Always show entries with empty categories
+					if (category === '') return true;
+					return selectedCategories.includes(category);
+				})
 	);
 
 	// Navigation functions

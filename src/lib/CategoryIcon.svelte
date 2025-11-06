@@ -5,7 +5,6 @@
 		Dumbbell,
 		Bike,
 		HardHat,
-		MapPin,
 		PartyPopper,
 		ChefHat,
 		Luggage,
@@ -15,7 +14,8 @@
 		Baby,
 		Shirt,
 		Gamepad2,
-		Car
+		Car,
+		ShoppingCart
 	} from '@lucide/svelte';
 	import type { Component } from 'svelte';
 
@@ -25,7 +25,7 @@
 		class?: string;
 	}
 
-	let { iconName = 'MapPin', size = 16, class: className = '' }: Props = $props();
+	let { iconName = 'ShoppingCart', size = 16, class: className = '' }: Props = $props();
 
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	const iconMap: Record<string, Component<any>> = {
@@ -34,7 +34,6 @@
 		Dumbbell,
 		Bike,
 		HardHat,
-		MapPin,
 		PartyPopper,
 		ChefHat,
 		Luggage,
@@ -44,10 +43,11 @@
 		Baby,
 		Shirt,
 		Gamepad2,
-		Car
+		Car,
+		ShoppingCart
 	};
 
-	const IconComponent = $derived(iconMap[iconName] || MapPin);
+	const IconComponent = $derived(iconMap[iconName] || ShoppingCart);
 </script>
 
 <svelte:component this={IconComponent} {size} class={className} />

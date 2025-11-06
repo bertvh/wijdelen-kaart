@@ -40,20 +40,16 @@
 		</h4>
 
 		<!-- Category -->
-		{#if isFeature(entry) ? entry.properties?.category : entry.category}
-			<div class="flex items-center gap-2">
-				{#if isFeature(entry) ? entry.properties?.icon : entry.icon}
-					<CategoryIcon
-						iconName={(isFeature(entry) ? entry.properties?.icon : entry.icon) || 'MapPin'}
-						size={16}
-						class="shrink-0 text-primary-500"
-					/>
-				{/if}
-				<span class="text-s capitalize">
-					{isFeature(entry) ? entry.properties!.category : entry.category}
-				</span>
-			</div>
-		{/if}
+		<div class="flex items-center gap-2">
+			<CategoryIcon
+				iconName={(isFeature(entry) ? entry.properties?.icon : entry.icon) || 'ShoppingCart'}
+				size={16}
+				class="shrink-0 text-primary-500"
+			/>
+			<span class="text-s capitalize">
+				{(isFeature(entry) ? entry.properties?.category : entry.category) || 'Allerlei'}
+			</span>
+		</div>
 
 		<!-- Description -->
 		{#if isFeature(entry) ? entry.properties?.description : entry.description}

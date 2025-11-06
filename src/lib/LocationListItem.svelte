@@ -23,14 +23,10 @@
 <div class="flex items-start justify-between text-surface-800-200">
 	<div class="flex-1">
 		<h3 class="truncate h3 text-sm font-medium text-surface-900-100">{location.name}</h3>
-		{#if location.category}
-			<span class="flex shrink-0 items-center gap-1 rounded-full text-xs">
-				{#if location.icon}
-					<CategoryIcon iconName={location.icon} size={14} class="shrink-0" />
-				{/if}
-				<span class="capitalize">{location.category}</span>
-			</span>
-		{/if}
+		<p class="text-surface-500-400 items-middle mt-1 flex gap-1 text-xs">
+			<CategoryIcon iconName={location.icon || 'ShoppingCart'} size={14} class="shrink-0" />
+			<span class="capitalize">{location.category || 'Allerlei'}</span>
+		</p>
 
 		{#if location.city || location.address || location.postalCode}
 			<p class="text-surface-500-400 mt-1 flex items-start gap-1 text-xs">
