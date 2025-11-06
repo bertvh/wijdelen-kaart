@@ -25,11 +25,10 @@
 					<hr class="my-2 hr border-surface-500" />
 					<p class="text-sm text-surface-700-300">
 						<span class="inline-flex items-center gap-2">
-							
 							<span>
 								Gerealiseerd door
 								<a
-									class="text-primary-600  hover:text-primary-500 dark:text-primary-300"
+									class="text-primary-600 hover:text-primary-500 dark:text-primary-300"
 									href="https://wijdelen.be"
 									target="_blank"
 									rel="noopener noreferrer"
@@ -38,13 +37,14 @@
 								</a>
 								/
 								<a
-									class="text-primary-600  hover:text-primary-500 dark:text-primary-300"
+									class="text-primary-600 hover:text-primary-500 dark:text-primary-300"
 									href="https://hurendelen.be"
 									target="_blank"
 									rel="noopener noreferrer"
 								>
 									Green Deal Huren &amp; Delen
-								</a>. <MapPinPlus class="inline align-text-top" size="16" /> Wil je ook zichtbaar zijn op deze huur- en deelkaart?
+								</a>. <MapPinPlus class="inline align-text-top" size="16" /> Wil je ook zichtbaar zijn
+								op deze huur- en deelkaart?
 								<a class="anchor" href="https://calendly.com/hurendelen/30min" target="_blank"
 									>Maak een afspraak in ons loket.</a
 								>
