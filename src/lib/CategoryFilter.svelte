@@ -6,9 +6,15 @@
 		categories: string[];
 		onSelectedCategoriesChange: (selectedCategories: string[]) => void;
 		onAnimationComplete?: () => void;
+		animate?: boolean;
 	}
 
-	let { categories, onSelectedCategoriesChange, onAnimationComplete }: Props = $props();
+	let {
+		categories,
+		onSelectedCategoriesChange,
+		onAnimationComplete,
+		animate = true
+	}: Props = $props();
 
 	// Track selected categories (initialize with all categories)
 	let selectedCategories = $state<string[]>([]);
@@ -28,6 +34,15 @@
 	});
 
 	onMount(() => {
+		if (!animate) {
+			// Skip animations - show everything immediately
+			typewriterText = fullText;
+			showCategories = true;
+			visibleCategories = categories;
+			onAnimationComplete?.();
+			return;
+		}
+
 		// Start typewriter animation
 		let currentIndex = 0;
 		const typewriterInterval = setInterval(() => {
@@ -68,22 +83,35 @@
 	}
 </script>
 
-<div class="p-4 text-primary-500">
+<div class="text-primary-500">
 	<span class="mb-3 font-light text-primary-500">{typewriterText}</span>
 	{#if showCategories}
 		<span>
 			{#each visibleCategories as category (category)}
-				<button
-					class="-mx-1 me-1.5 rounded px-1 text-sm font-semibold transition-all {selectedCategories.includes(
-						category
-					)
-						? 'bg-primary-500 text-surface-50 hover:bg-primary-500/90 hover:text-surface-50'
-						: 'opacity-100 hover:bg-primary-500/60 hover:text-surface-50'}"
-					onclick={() => toggleCategory(category)}
-					in:fly={{ x: -20, duration: 300 }}
-				>
-					{category}
-				</button>
+				{#if animate}
+					<button
+						class="-mx-1 me-1.5 rounded px-1 text-sm font-semibold transition-all {selectedCategories.includes(
+							category
+						)
+							? 'bg-primary-500 text-surface-50 hover:bg-primary-500/90 hover:text-surface-50'
+							: 'opacity-100 hover:bg-primary-500/60 hover:text-surface-50'}"
+						onclick={() => toggleCategory(category)}
+						in:fly={{ x: -20, duration: 300 }}
+					>
+						{category}
+					</button>
+				{:else}
+					<button
+						class="-mx-1 me-1.5 rounded px-1 text-sm font-semibold transition-all {selectedCategories.includes(
+							category
+						)
+							? 'bg-primary-500 text-surface-50 hover:bg-primary-500/90 hover:text-surface-50'
+							: 'opacity-100 hover:bg-primary-500/60 hover:text-surface-50'}"
+						onclick={() => toggleCategory(category)}
+					>
+						{category}
+					</button>
+				{/if}
 			{/each}
 		</span>
 	{/if}

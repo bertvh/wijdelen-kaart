@@ -11,13 +11,15 @@
 	} from 'svelte-maplibre-gl';
 	import type { PageData } from './$types';
 	import type { Map, MapMouseEvent, GeoJSONSource as MapLibreGeoJSONSource } from 'maplibre-gl';
-	import LocationCard from '$lib/LocationCard.svelte';
 	import CategoryFilter from '$lib/CategoryFilter.svelte';
-	import LocationPopup from '$lib/LocationPopup.svelte';
-	import InfoDialog from '$lib/InfoDialog.svelte';
-	import { X, Globe } from '@lucide/svelte';
+	import LocationPopup from '$lib/LocationDetailCard.svelte';
+	import ResultsCount from '$lib/ResultsCount.svelte';
+	import LocationsList from '$lib/LocationsList.svelte';
+	import PageHeader from '$lib/PageHeader.svelte';
+	import DetailHeader from '$lib/DetailHeader.svelte';
+	import { X, ChevronUp, ChevronDown } from '@lucide/svelte';
 	import type { Point, Feature } from 'geojson';
-	import { fade } from 'svelte/transition';
+	import { fade, slide } from 'svelte/transition';
 	import type { OnlineOnlyEntry } from './+page.server';
 
 	interface Props {
@@ -55,6 +57,10 @@
 	// Track animation state
 	let showLocationsList = $state(false);
 
+	// Mobile bottom sheet state
+	type MobileSheetState = 'collapsed' | 'expanded' | 'detail';
+	let mobileSheetState = $state<MobileSheetState>('collapsed');
+
 	// Filter GeoJSON features based on selected categories (for sidebar list)
 	const filteredGeoJson = $derived({
 		type: 'FeatureCollection' as const,
@@ -77,6 +83,7 @@
 				)
 	);
 
+	// Navigation functions
 	function zoomToLocation(feature: Feature<Point>) {
 		const [lng, lat] = feature.geometry.coordinates;
 		map!.easeTo({
@@ -84,6 +91,14 @@
 		});
 		// Also select the location when zooming to it
 		selectedEntry = feature;
+	}
+
+	function zoomToLocationMobile(feature: Feature<Point>) {
+		const [lng, lat] = feature.geometry.coordinates;
+		map!.easeTo({
+			center: [lng, lat]
+		});
+		showMobileDetail(feature);
 	}
 
 	async function zoomCluster(e: MapMouseEvent) {
@@ -97,174 +112,121 @@
 		});
 	}
 
+	// Consolidated selection logic - detects mobile vs desktop
 	function selectLocation(e: MapMouseEvent) {
 		const features = map!.queryRenderedFeatures(e.point);
 		if (features.length > 0) {
 			const feature = features[0];
 			// Only select if it's not a cluster (doesn't have point_count)
 			if (!feature.properties?.point_count) {
-				// Use setTimeout to avoid potential state update conflicts
+				const isMobile = window.innerWidth < 768;
 				setTimeout(() => {
-					selectedEntry = feature as Feature<Point>;
+					if (isMobile) {
+						showMobileDetail(feature as Feature<Point>);
+					} else {
+						selectedEntry = feature as Feature<Point>;
+					}
 				}, 0);
 			}
 		}
 	}
 
-	function selectOnlineOnly(entry: OnlineOnlyEntry) {
-		selectedEntry = entry;
-	}
-
-	function scrollToId(targetId: string) {
-		const el = document.getElementById(targetId);
-		if (el) {
-			el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+	// Selection handlers for list items
+	function handleFeatureClick(feature: Feature<Point>, isMobile: boolean) {
+		if (isMobile) {
+			zoomToLocationMobile(feature);
+		} else {
+			zoomToLocation(feature);
 		}
 	}
 
-	function scrollToLocations() {
-		scrollToId('locations-list');
+	function handleOnlineEntryClick(entry: OnlineOnlyEntry, isMobile: boolean) {
+		if (isMobile) {
+			showMobileDetail(entry);
+		} else {
+			selectedEntry = entry;
+		}
 	}
 
-	function scrollToOnline() {
-		scrollToId('online-list');
+	// Mobile-specific functions
+	function expandMobileSheet() {
+		mobileSheetState = 'expanded';
 	}
+
+	function collapseMobileSheet() {
+		mobileSheetState = 'collapsed';
+		selectedEntry = null;
+	}
+
+	function showMobileDetail(entry: Feature<Point> | OnlineOnlyEntry) {
+		selectedEntry = entry;
+		mobileSheetState = 'detail';
+	}
+
+	// Prevent body scroll when bottom sheet is expanded
+	$effect(() => {
+		if (mobileSheetState === 'expanded' || mobileSheetState === 'detail') {
+			document.body.style.overflow = 'hidden';
+		} else {
+			document.body.style.overflow = '';
+		}
+		return () => {
+			document.body.style.overflow = '';
+		};
+	});
 </script>
 
 <div class="relative h-dvh font-light">
-	<!-- Small screen message -->
-	<div
-		class="absolute inset-0 z-50 flex items-center justify-center bg-surface-50-950 p-8 md:hidden"
-	>
-		<div class="text-center">
-			<img
-				src="/logo-deelkaart.png"
-				alt="Wij Delen Deelkaart"
-				class="mx-auto mb-6 h-12 object-contain"
-			/>
-			<p class="text-surface-900-50">Oeps .. dit werkt voorlopig enkel op iets grotere schermen</p>
-		</div>
-	</div>
+	<!-- Mobile Header -->
+	<PageHeader variant="mobile" />
 
+	<!-- Desktop version -->
 	<div class="grid h-full grid-cols-1 md:grid-cols-[280px_1fr]">
 		<!-- Sidebar -->
 		<aside class="z-10 hidden h-full flex-col overflow-auto bg-surface-50-950 shadow-lg md:flex">
-			<div class="p-4 pb-2">
-				<div class="grid grid-cols-[1fr_auto] items-center">
-					<img src="/logo-deelkaart.png" alt="Wij Delen Deelkaart" class="h-10 object-contain" />
-					<InfoDialog />
-				</div>
-			</div>
+			<PageHeader variant="desktop" />
 
 			<!-- Category Filters -->
-			<CategoryFilter
-				categories={data.categories}
-				onSelectedCategoriesChange={(categories) => {
-					selectedCategories = categories;
-				}}
-				onAnimationComplete={() => {
-					showLocationsList = true;
-				}}
-			/>
+			<div class="p-4">
+				<CategoryFilter
+					categories={data.categories}
+					onSelectedCategoriesChange={(categories) => {
+						selectedCategories = categories;
+					}}
+					onAnimationComplete={() => {
+						showLocationsList = true;
+					}}
+				/>
+			</div>
 
 			<!-- Scrollable locations list -->
 			{#if showLocationsList}
-				<p class="px-4 pb-2 text-xs font-extralight text-surface-800-200 shadow-md">
-					{filteredGeoJson.features.length + filteredOnlineOnly.length} resultaten (
-					<a
-						href="#locations-list"
-						class="underline decoration-dotted underline-offset-2 hover:text-primary-600"
-						onclick={(e) => {
-							e.preventDefault();
-							scrollToLocations();
-						}}>{filteredGeoJson.features.length} locaties</a
-					>
-					|
-					<a
-						href="#online-list"
-						class="underline decoration-dotted underline-offset-2 hover:text-primary-600"
-						onclick={(e) => {
-							e.preventDefault();
-							scrollToOnline();
-						}}>{filteredOnlineOnly.length} online</a
-					>
-					)
-				</p>
+				<div class="px-4 py-2 pb-2 shadow-md">
+					<ResultsCount
+						locationsCount={filteredGeoJson.features.length}
+						onlineCount={filteredOnlineOnly.length}
+						locationsTargetId="locations-list"
+						onlineTargetId="online-list"
+						variant="desktop"
+					/>
+				</div>
 				<div class="flex-1 overflow-y-auto" in:fade={{ duration: 500 }}>
-					<ul id="locations-list" class="divide-y divide-surface-900/10 dark:divide-surface-100/10">
-						{#each filteredGeoJson.features as feature (feature.id)}
-							<li
-								role="button"
-								tabindex="0"
-								class="w-full cursor-pointer p-4 text-left transition-colors hover:bg-primary-50-950/50 {selectedEntry &&
-								'geometry' in selectedEntry &&
-								(selectedEntry as Feature<Point>).id === feature.id
-									? 'bg-primary-50-950 hover:bg-primary-50-950/80'
-									: ''}"
-								onclick={() => zoomToLocation(feature)}
-								onkeydown={(e) => {
-									if (e.key === 'Enter' || e.key === ' ') {
-										e.preventDefault();
-										zoomToLocation(feature);
-									}
-								}}
-							>
-								<LocationCard
-									location={{
-										name: feature.properties?.name || '',
-										address: feature.properties?.address || '',
-										postalCode: feature.properties?.postalCode || '',
-										city: feature.properties?.city || '',
-										category: feature.properties?.category || '',
-										icon: feature.properties?.icon || ''
-									}}
-								/>
-							</li>
-						{/each}
-						<!-- Divider for online-only entries -->
-						{#if filteredOnlineOnly.length > 0}
-							<li id="online-list" class="sticky top-0 z-10 bg-primary-100-900/80 p-2">
-								<span class="flex text-center text-xs font-bold text-primary-700-300"
-									><Globe size={16} />&nbsp;Online diensten</span
-								>
-							</li>
-							{#each filteredOnlineOnly as entry (entry.id)}
-								<li
-									role="button"
-									tabindex="0"
-									class="w-full cursor-pointer p-4 text-left transition-colors hover:bg-primary-50-950/50 {selectedEntry &&
-									'id' in selectedEntry &&
-									selectedEntry.id === entry.id
-										? 'bg-primary-50-950 hover:bg-primary-50-950/80'
-										: ''}"
-									onclick={() => selectOnlineOnly(entry)}
-									onkeydown={(e) => {
-										if (e.key === 'Enter' || e.key === ' ') {
-											e.preventDefault();
-											selectOnlineOnly(entry);
-										}
-									}}
-								>
-									<LocationCard
-										location={{
-											name: entry.name,
-											city: '',
-											category: entry.category,
-											icon: entry.icon,
-											url: entry.url
-										}}
-									/>
-								</li>
-							{/each}
-						{/if}
-					</ul>
+					<LocationsList
+						features={filteredGeoJson.features}
+						onlineEntries={filteredOnlineOnly}
+						{selectedEntry}
+						onFeatureClick={(feature) => handleFeatureClick(feature, false)}
+						onOnlineEntryClick={(entry) => handleOnlineEntryClick(entry, false)}
+						locationsListId="locations-list"
+						onlineListId="online-list"
+					/>
 				</div>
 			{/if}
 		</aside>
 
 		<!-- Main content -->
 		<main
-			class="h-full overflow-hidden transition-all duration-300 ease-in-out {!showLocationsList
+			class="h-full overflow-hidden pt-[52px] transition-all duration-300 ease-in-out md:pt-0 {!showLocationsList
 				? 'blur'
 				: ''}"
 		>
@@ -371,7 +333,7 @@
 		</main>
 	</div>
 
-	<!-- Floating Card -->
+	<!-- Floating Location Details Card (Desktop only) -->
 	{#if selectedEntry}
 		<div class="absolute top-4 left-[296px] z-50 hidden md:block">
 			<div class="relative">
@@ -384,8 +346,119 @@
 				>
 					<X class="pointer-events-none text-surface-500" size={16} />
 				</button>
-				<LocationPopup entry={selectedEntry} />
+				<div
+					class="w-72 shrink-0 overflow-hidden rounded-container bg-surface-50-950 text-surface-800-200 shadow-lg lg:w-96"
+				>
+					<LocationPopup entry={selectedEntry} />
+				</div>
 			</div>
 		</div>
 	{/if}
+
+	<!-- Mobile Bottom Sheet -->
+	<div class="fixed right-0 bottom-0 left-0 z-50 md:hidden">
+		<!-- Collapsed State -->
+		{#if mobileSheetState === 'collapsed'}
+			<div
+				class="pb-safe bg-surface-50-950 shadow-2xl transition-transform duration-300 ease-out"
+				in:slide={{ axis: 'y', duration: 300 }}
+			>
+				<button
+					onclick={expandMobileSheet}
+					class="flex w-full items-center justify-between px-4 py-3 text-left active:bg-surface-100-900/50"
+					aria-label="Show results"
+				>
+					<ResultsCount
+						locationsCount={filteredGeoJson.features.length}
+						onlineCount={filteredOnlineOnly.length}
+						locationsTargetId="mobile-locations-list"
+						onlineTargetId="mobile-online-list"
+					/>
+					<ChevronUp size={20} class="text-surface-700-300" />
+				</button>
+			</div>
+		{/if}
+
+		<!-- Expanded State (Filter + List) -->
+		{#if mobileSheetState === 'expanded'}
+			<div
+				class="pb-safe flex max-h-[85vh] flex-col bg-surface-50-950 shadow-2xl transition-transform duration-300 ease-out"
+				in:slide={{ axis: 'y', duration: 300 }}
+			>
+				<!-- Drag Handle and Header -->
+				<div class="flex items-center justify-between border-b border-surface-200-800 px-4 py-1">
+					<ResultsCount
+						locationsCount={filteredGeoJson.features.length}
+						onlineCount={filteredOnlineOnly.length}
+						locationsTargetId="mobile-locations-list"
+						onlineTargetId="mobile-online-list"
+					/>
+					<button
+						onclick={collapseMobileSheet}
+						class="flex h-8 w-8 items-center justify-center rounded-full hover:bg-surface-100-900"
+						aria-label="Collapse"
+					>
+						<ChevronDown size={20} class="text-surface-700-300" />
+					</button>
+				</div>
+
+				<!-- Scrollable Content -->
+				<div class="flex-1 overflow-y-auto overscroll-contain">
+					<!-- Category Filter -->
+					<div class="mx-4 border-b border-surface-200-800">
+						<CategoryFilter
+							categories={data.categories}
+							onSelectedCategoriesChange={(categories) => {
+								selectedCategories = categories;
+							}}
+							onAnimationComplete={() => {
+								showLocationsList = true;
+							}}
+							animate={false}
+						/>
+					</div>
+
+					<!-- Results Count -->
+					{#if showLocationsList}
+						<LocationsList
+							features={filteredGeoJson.features}
+							onlineEntries={filteredOnlineOnly}
+							{selectedEntry}
+							onFeatureClick={(feature) => handleFeatureClick(feature, true)}
+							onOnlineEntryClick={(entry) => handleOnlineEntryClick(entry, true)}
+							locationsListId="mobile-locations-list"
+							onlineListId="mobile-online-list"
+							showTransition={true}
+						/>
+					{/if}
+				</div>
+			</div>
+		{/if}
+
+		<!-- Detail State -->
+		{#if mobileSheetState === 'detail' && selectedEntry}
+			<div
+				class="pb-safe flex max-h-[90vh] flex-col bg-surface-50-950 shadow-2xl transition-transform duration-300 ease-out"
+				in:slide={{ axis: 'y', duration: 300 }}
+			>
+				<!-- Image Section at top with close button overlay -->
+				<div class="relative">
+					<DetailHeader entry={selectedEntry} variant="mobile" />
+					<!-- Close button overlay -->
+					<button
+						onclick={collapseMobileSheet}
+						class="absolute top-4 right-4 z-20 flex h-10 w-10 items-center justify-center rounded-full bg-surface-900/80 text-white backdrop-blur-sm hover:bg-surface-900"
+						aria-label="Close"
+					>
+						<X size={20} class="text-surface-50" />
+					</button>
+				</div>
+
+				<!-- Detail Content (scrolls behind filter) -->
+				<div class="flex-1 overflow-y-auto overscroll-contain">
+					<LocationPopup entry={selectedEntry} />
+				</div>
+			</div>
+		{/if}
+	</div>
 </div>
