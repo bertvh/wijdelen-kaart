@@ -425,18 +425,16 @@
 					</div>
 
 					<!-- Results Count -->
-					{#if showLocationsList}
-						<LocationsList
-							features={filteredGeoJson.features}
-							onlineEntries={filteredOnlineOnly}
-							{selectedEntry}
-							onFeatureClick={(feature) => handleFeatureClick(feature, true)}
-							onOnlineEntryClick={(entry) => handleOnlineEntryClick(entry, true)}
-							locationsListId="mobile-locations-list"
-							onlineListId="mobile-online-list"
-							showTransition={true}
-						/>
-					{/if}
+					<LocationsList
+						features={filteredGeoJson.features}
+						onlineEntries={filteredOnlineOnly}
+						{selectedEntry}
+						onFeatureClick={(feature) => handleFeatureClick(feature, true)}
+						onOnlineEntryClick={(entry) => handleOnlineEntryClick(entry, true)}
+						locationsListId="mobile-locations-list"
+						onlineListId="mobile-online-list"
+						showTransition={true}
+					/>
 				</div>
 			</div>
 		{/if}
