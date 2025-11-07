@@ -89,23 +89,22 @@
 				})
 	);
 
-	// Navigation functions
-	function zoomToLocation(feature: Feature<Point>) {
-		const [lng, lat] = feature.geometry.coordinates;
-		map!.easeTo({
-			center: [lng, lat]
-		});
-		// Also select the location when zooming to it
-		selectedEntry = feature;
-	}
+	// Reactive effect: Zoom to selected entry when it's a Feature<Point>
+	$effect(() => {
+		if (map && selectedEntry && 'geometry' in selectedEntry) {
+			const [lng, lat] = selectedEntry.geometry.coordinates;
+			map.easeTo({
+				center: [lng, lat]
+			});
+		}
+	});
 
-	function zoomToLocationMobile(feature: Feature<Point>) {
-		const [lng, lat] = feature.geometry.coordinates;
-		map!.easeTo({
-			center: [lng, lat]
-		});
-		showMobileDetail(feature);
-	}
+	// Reactive effect: Show mobile detail when entry is selected on mobile
+	$effect(() => {
+		if (selectedEntry && window.innerWidth < 768) {
+			mobileSheetState = 'detail';
+		}
+	});
 
 	async function zoomCluster(e: MapMouseEvent) {
 		const features = map!.queryRenderedFeatures(e.point);
@@ -125,33 +124,18 @@
 			const feature = features[0];
 			// Only select if it's not a cluster (doesn't have point_count)
 			if (!feature.properties?.point_count) {
-				const isMobile = window.innerWidth < 768;
-				setTimeout(() => {
-					if (isMobile) {
-						showMobileDetail(feature as Feature<Point>);
-					} else {
-						selectedEntry = feature as Feature<Point>;
-					}
-				}, 0);
+				selectedEntry = feature as Feature<Point>;
 			}
 		}
 	}
 
 	// Selection handlers for list items
-	function handleFeatureClick(feature: Feature<Point>, isMobile: boolean) {
-		if (isMobile) {
-			zoomToLocationMobile(feature);
-		} else {
-			zoomToLocation(feature);
-		}
+	function handleFeatureClick(feature: Feature<Point>) {
+		selectedEntry = feature;
 	}
 
-	function handleOnlineEntryClick(entry: OnlineOnlyEntry, isMobile: boolean) {
-		if (isMobile) {
-			showMobileDetail(entry);
-		} else {
-			selectedEntry = entry;
-		}
+	function handleOnlineEntryClick(entry: OnlineOnlyEntry) {
+		selectedEntry = entry;
 	}
 
 	// Mobile-specific functions
@@ -162,11 +146,6 @@
 	function collapseMobileSheet() {
 		mobileSheetState = 'collapsed';
 		selectedEntry = null;
-	}
-
-	function showMobileDetail(entry: Feature<Point> | OnlineOnlyEntry) {
-		selectedEntry = entry;
-		mobileSheetState = 'detail';
 	}
 
 	// Prevent body scroll when bottom sheet is expanded
@@ -187,9 +166,11 @@
 	<PageHeader variant="mobile" />
 
 	<!-- Desktop version -->
-	<div class="grid h-full grid-cols-1 md:grid-cols-[280px_1fr]">
+	<div class="grid h-full grid-cols-1 md:grid-cols-[350px_1fr]">
 		<!-- Sidebar -->
-		<aside class="z-10 hidden h-full flex-col overflow-auto bg-surface-50-950 shadow-lg md:flex">
+		<aside
+			class="z-10 hidden h-full flex-col overflow-x-hidden overflow-y-auto bg-surface-50-950 shadow-lg md:flex"
+		>
 			<PageHeader variant="desktop" />
 
 			<!-- Category Filters -->
@@ -216,13 +197,13 @@
 						variant="desktop"
 					/>
 				</div>
-				<div class="flex-1 overflow-y-auto" in:fade={{ duration: 500 }}>
+				<div class="flex-1 overflow-x-hidden overflow-y-auto" in:fade={{ duration: 500 }}>
 					<LocationsList
 						features={filteredGeoJson.features}
 						onlineEntries={filteredOnlineOnly}
 						{selectedEntry}
-						onFeatureClick={(feature) => handleFeatureClick(feature, false)}
-						onOnlineEntryClick={(entry) => handleOnlineEntryClick(entry, false)}
+						onFeatureClick={handleFeatureClick}
+						onOnlineEntryClick={handleOnlineEntryClick}
 						locationsListId="locations-list"
 						onlineListId="online-list"
 					/>
@@ -341,7 +322,7 @@
 
 	<!-- Floating Location Details Card (Desktop only) -->
 	{#if selectedEntry}
-		<div class="absolute top-4 left-[296px] z-50 hidden md:block">
+		<div class="absolute top-4 left-[370px] z-50 hidden md:block">
 			<div class="relative">
 				<button
 					onclick={() => {
@@ -363,55 +344,19 @@
 
 	<!-- Mobile Bottom Sheet -->
 	<div class="fixed right-0 bottom-0 left-0 z-50 md:hidden">
-		<!-- Collapsed State -->
-		{#if mobileSheetState === 'collapsed'}
-			<div
-				class="pb-safe bg-surface-50-950 shadow-2xl transition-transform duration-300 ease-out"
-				in:slide={{ axis: 'y', duration: 300 }}
-			>
-				<button
-					onclick={expandMobileSheet}
-					class="flex w-full items-center justify-between px-4 py-3 text-left active:bg-surface-100-900/50"
-					aria-label="Show results"
-				>
-					<ResultsCount
-						locationsCount={filteredGeoJson.features.length}
-						onlineCount={filteredOnlineOnly.length}
-						locationsTargetId="mobile-locations-list"
-						onlineTargetId="mobile-online-list"
-					/>
-					<ChevronUp size={20} class="text-surface-700-300" />
-				</button>
-			</div>
-		{/if}
-
-		<!-- Expanded State (Filter + List) -->
-		{#if mobileSheetState === 'expanded'}
-			<div
-				class="pb-safe flex max-h-[85vh] flex-col bg-surface-50-950 shadow-2xl transition-transform duration-300 ease-out"
-				in:slide={{ axis: 'y', duration: 300 }}
-			>
-				<!-- Drag Handle and Header -->
-				<div class="flex items-center justify-between border-b border-surface-200-800 px-4 py-1">
-					<ResultsCount
-						locationsCount={filteredGeoJson.features.length}
-						onlineCount={filteredOnlineOnly.length}
-						locationsTargetId="mobile-locations-list"
-						onlineTargetId="mobile-online-list"
-					/>
-					<button
-						onclick={collapseMobileSheet}
-						class="flex h-8 w-8 items-center justify-center rounded-full hover:bg-surface-100-900"
-						aria-label="Collapse"
-					>
-						<ChevronDown size={20} class="text-surface-700-300" />
-					</button>
-				</div>
-
-				<!-- Scrollable Content -->
-				<div class="flex-1 overflow-y-auto overscroll-contain">
-					<!-- Category Filter -->
-					<div class="mx-4 border-b border-surface-200-800">
+		<!-- Main drawer (collapsed/expanded states) -->
+		<div
+			class="pb-safe flex flex-col rounded-t-2xl bg-surface-50-950 shadow-2xl transition-transform duration-300 ease-out {mobileSheetState ===
+			'collapsed'
+				? ''
+				: 'h-[85vh]'} {mobileSheetState === 'detail' ? 'hidden' : ''}"
+			in:slide={{ axis: 'y', duration: 300 }}
+		>
+			<!-- Always visible: CategoryFilter and ResultsCount -->
+			<div class="shrink-0">
+				<!-- Category Filter with Expand/Collapse Button -->
+				<div class="flex items-start justify-between border-b border-surface-200-800 px-4 py-3">
+					<div class="flex-1">
 						<CategoryFilter
 							categories={data.categories}
 							onSelectedCategoriesChange={(categories) => {
@@ -420,49 +365,79 @@
 							onAnimationComplete={() => {
 								showLocationsList = true;
 							}}
-							animate={false}
 						/>
 					</div>
+					<button
+						onclick={mobileSheetState === 'collapsed' ? expandMobileSheet : collapseMobileSheet}
+						class="flex h-11 w-11 shrink-0 touch-manipulation items-center justify-center hover:bg-surface-100-900"
+						aria-label={mobileSheetState === 'collapsed' ? 'Expand' : 'Collapse'}
+					>
+						{#if mobileSheetState === 'collapsed'}
+							<ChevronUp size={24} class="pointer-events-none text-surface-700-300" />
+						{:else}
+							<ChevronDown size={24} class="pointer-events-none text-surface-700-300" />
+						{/if}
+					</button>
+				</div>
 
-					<!-- Results Count -->
+				<!-- Results Count -->
+				<div class="px-4 py-2 pb-2 shadow-md">
+					<ResultsCount
+						locationsCount={filteredGeoJson.features.length}
+						onlineCount={filteredOnlineOnly.length}
+						locationsTargetId="mobile-locations-list"
+						onlineTargetId="mobile-online-list"
+						onExpand={expandMobileSheet}
+					/>
+				</div>
+			</div>
+
+			<!-- LocationsList - Only visible when expanded -->
+			{#if mobileSheetState === 'expanded'}
+				<div class="flex-1 overflow-x-hidden overflow-y-auto overscroll-contain">
 					<LocationsList
 						features={filteredGeoJson.features}
 						onlineEntries={filteredOnlineOnly}
 						{selectedEntry}
-						onFeatureClick={(feature) => handleFeatureClick(feature, true)}
-						onOnlineEntryClick={(entry) => handleOnlineEntryClick(entry, true)}
+						onFeatureClick={handleFeatureClick}
+						onOnlineEntryClick={handleOnlineEntryClick}
 						locationsListId="mobile-locations-list"
 						onlineListId="mobile-online-list"
 						showTransition={true}
 					/>
 				</div>
-			</div>
-		{/if}
+			{/if}
+		</div>
 
 		<!-- Detail State -->
-		{#if mobileSheetState === 'detail' && selectedEntry}
-			<div
-				class="pb-safe flex max-h-[90vh] flex-col bg-surface-50-950 shadow-2xl transition-transform duration-300 ease-out"
-				in:slide={{ axis: 'y', duration: 300 }}
-			>
-				<!-- Image Section at top with close button overlay -->
-				<div class="relative">
+		<div
+			class="pb-safe flex max-h-[90vh] flex-col bg-surface-50-950 shadow-2xl transition-transform duration-300 ease-out {mobileSheetState !==
+			'detail'
+				? 'hidden'
+				: ''}"
+			in:slide={{ axis: 'y', duration: 300 }}
+		>
+			<!-- Image Section at top with close button overlay -->
+			<div class="relative">
+				{#if selectedEntry}
 					<DetailHeader entry={selectedEntry} variant="mobile" />
-					<!-- Close button overlay -->
-					<button
-						onclick={collapseMobileSheet}
-						class="absolute top-4 right-4 z-20 flex h-10 w-10 items-center justify-center rounded-full bg-surface-900/80 text-white backdrop-blur-sm hover:bg-surface-900"
-						aria-label="Close"
-					>
-						<X size={20} class="text-surface-50" />
-					</button>
-				</div>
-
-				<!-- Detail Content (scrolls behind filter) -->
-				<div class="flex-1 overflow-y-auto overscroll-contain">
-					<LocationPopup entry={selectedEntry} />
-				</div>
+				{/if}
+				<!-- Close button overlay -->
+				<button
+					onclick={collapseMobileSheet}
+					class="absolute top-4 right-4 z-20 flex h-10 w-10 items-center justify-center rounded-full bg-surface-900/80 text-white backdrop-blur-sm hover:bg-surface-900"
+					aria-label="Close"
+				>
+					<X size={20} class="text-surface-50" />
+				</button>
 			</div>
-		{/if}
+
+			<!-- Detail Content (scrolls behind filter) -->
+			<div class="flex-1 overflow-y-auto overscroll-contain">
+				{#if selectedEntry}
+					<LocationPopup entry={selectedEntry} />
+				{/if}
+			</div>
+		</div>
 	</div>
 </div>

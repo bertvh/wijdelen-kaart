@@ -56,7 +56,7 @@
 			<li
 				role="button"
 				tabindex="0"
-				class="w-full cursor-pointer p-4 text-left transition-colors {hoverClass} {isFeatureSelected(
+				class="w-full min-w-0 cursor-pointer p-4 text-left transition-colors {hoverClass} {isFeatureSelected(
 					feature
 				)
 					? selectedHoverClass
@@ -87,7 +87,7 @@
 				<li
 					role="button"
 					tabindex="0"
-					class="w-full cursor-pointer p-4 text-left transition-colors {hoverClass} {isOnlineEntrySelected(
+					class="w-full min-w-0 cursor-pointer p-4 text-left transition-colors {hoverClass} {isOnlineEntrySelected(
 						entry
 					)
 						? selectedHoverClass

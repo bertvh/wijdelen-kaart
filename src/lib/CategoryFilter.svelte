@@ -26,7 +26,7 @@
 
 	const fullText = 'Wij delen om te ';
 	const typewriterSpeed = import.meta.env.DEV ? 7.5 : 75; // milliseconds per character
-	const categoryDelay = import.meta.env.DEV ? 30.0 : 300; // milliseconds between categories
+	const categoryDelay = import.meta.env.DEV ? 15.0 : 150; // milliseconds between categories
 
 	// Emit changes when selectedCategories changes
 	$effect(() => {
@@ -84,34 +84,21 @@
 </script>
 
 <div class="text-primary-500">
-	<span class="mb-3 font-light text-primary-500">{typewriterText}</span>
+	<span class="mr-1 mb-3 font-light text-primary-500">{typewriterText}</span>
 	{#if showCategories}
 		<span>
 			{#each visibleCategories as category (category)}
-				{#if animate}
-					<button
-						class="-mx-1 me-1.5 rounded px-1 text-sm font-semibold transition-all {selectedCategories.includes(
-							category
-						)
-							? 'bg-primary-500 text-surface-50 hover:bg-primary-500/90 hover:text-surface-50'
-							: 'opacity-100 hover:bg-primary-500/60 hover:text-surface-50'}"
-						onclick={() => toggleCategory(category)}
-						in:fly={{ x: -20, duration: 300 }}
-					>
-						{category}
-					</button>
-				{:else}
-					<button
-						class="-mx-1 me-1.5 rounded px-1 text-sm font-semibold transition-all {selectedCategories.includes(
-							category
-						)
-							? 'bg-primary-500 text-surface-50 hover:bg-primary-500/90 hover:text-surface-50'
-							: 'opacity-100 hover:bg-primary-500/60 hover:text-surface-50'}"
-						onclick={() => toggleCategory(category)}
-					>
-						{category}
-					</button>
-				{/if}
+				<button
+					class="-mx-1 me-1.5 rounded px-1 text-sm font-semibold transition-all {selectedCategories.includes(
+						category
+					)
+						? 'bg-primary-500 text-surface-50 hover:bg-primary-500/90 hover:text-surface-50'
+						: 'opacity-100 hover:bg-primary-500/60 hover:text-surface-50'}"
+					onclick={() => toggleCategory(category)}
+					in:fly={{ x: -10, duration: 650 }}
+				>
+					{category}
+				</button>
 			{/each}
 		</span>
 	{/if}
