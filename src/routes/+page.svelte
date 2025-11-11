@@ -17,6 +17,7 @@
 	import LocationsList from '$lib/LocationsList.svelte';
 	import PageHeader from '$lib/PageHeader.svelte';
 	import DetailHeader from '$lib/DetailHeader.svelte';
+	import WayToGoLink from '$lib/WayToGoLink.svelte';
 	import { X, ChevronUp, ChevronDown } from '@lucide/svelte';
 	import type { Point, Feature } from 'geojson';
 	import { fade, slide } from 'svelte/transition';
@@ -50,6 +51,11 @@
 
 	// Track selected categories (will be managed by CategoryFilter component)
 	let selectedCategories = $state<string[]>([]);
+
+	// Check if fietsen or autorijden is selected
+	const showSpecialLink = $derived(
+		selectedCategories.includes('fietsen') || selectedCategories.includes('autorijden')
+	);
 
 	// Track selected entry for floating card (feature or online entry)
 	let selectedEntry = $state<Feature<Point> | OnlineOnlyEntry | null>(null);
@@ -189,13 +195,17 @@
 			<!-- Scrollable locations list -->
 			{#if showLocationsList}
 				<div class="px-4 py-2 pb-2 shadow-md">
-					<ResultsCount
-						locationsCount={filteredGeoJson.features.length}
-						onlineCount={filteredOnlineOnly.length}
-						locationsTargetId="locations-list"
-						onlineTargetId="online-list"
-						variant="desktop"
-					/>
+					<div class="flex items-center justify-between gap-2">
+						<ResultsCount
+							locationsCount={filteredGeoJson.features.length}
+							onlineCount={filteredOnlineOnly.length}
+							onlineTargetId="online-list"
+							variant="desktop"
+						/>
+						<div class="opacity-0 transition-opacity" class:opacity-100={showSpecialLink}>
+							<WayToGoLink />
+						</div>
+					</div>
 				</div>
 				<div class="flex-1 overflow-x-hidden overflow-y-auto" in:fade={{ duration: 500 }}>
 					<LocationsList
@@ -382,13 +392,17 @@
 
 				<!-- Results Count -->
 				<div class="px-4 py-2 pb-2 shadow-md">
-					<ResultsCount
-						locationsCount={filteredGeoJson.features.length}
-						onlineCount={filteredOnlineOnly.length}
-						locationsTargetId="mobile-locations-list"
-						onlineTargetId="mobile-online-list"
-						onExpand={expandMobileSheet}
-					/>
+					<div class="flex items-center justify-between gap-2">
+						<ResultsCount
+							locationsCount={filteredGeoJson.features.length}
+							onlineCount={filteredOnlineOnly.length}
+							onlineTargetId="mobile-online-list"
+							onExpand={expandMobileSheet}
+						/>
+						<div class="opacity-0 transition-opacity" class:opacity-100={showSpecialLink}>
+							<WayToGoLink />
+						</div>
+					</div>
 				</div>
 			</div>
 

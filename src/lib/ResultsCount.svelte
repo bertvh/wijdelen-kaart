@@ -2,7 +2,6 @@
 	interface Props {
 		locationsCount: number;
 		onlineCount: number;
-		locationsTargetId: string;
 		onlineTargetId: string;
 		variant?: 'desktop' | 'mobile';
 		onExpand?: () => void;
@@ -11,11 +10,12 @@
 	let {
 		locationsCount,
 		onlineCount,
-		locationsTargetId,
 		onlineTargetId,
 		variant = 'mobile',
 		onExpand
 	}: Props = $props();
+
+	let totalResults = $derived(locationsCount + onlineCount);
 
 	function scrollToId(targetId: string) {
 		const el = document.getElementById(targetId);
@@ -45,12 +45,6 @@
 			scrollToId(targetId);
 		}
 	}
-
-	const totalResults = locationsCount + onlineCount;
-	const linkClass =
-		variant === 'desktop'
-			? 'underline decoration-dotted underline-offset-2 hover:text-primary-600'
-			: 'underline decoration-dotted underline-offset-2';
 </script>
 
 <p
@@ -60,14 +54,11 @@
 	onclick={handleClick}
 >
 	{totalResults} resultaten (
+
 	<a
-		href="#{locationsTargetId}"
-		class={linkClass}
-		onclick={(e) => handleLinkClick(e, locationsTargetId)}>{locationsCount} locaties</a
-	>
-	|
-	<a href="#{onlineTargetId}" class={linkClass} onclick={(e) => handleLinkClick(e, onlineTargetId)}
-		>{onlineCount} online</a
+		href="#{onlineTargetId}"
+		class="underline decoration-dotted underline-offset-2"
+		onclick={(e) => handleLinkClick(e, onlineTargetId)}>{onlineCount} online</a
 	>
 	)
 </p>
