@@ -373,7 +373,7 @@
 			class="pb-safe flex flex-col rounded-t-2xl bg-surface-50-950 shadow-2xl transition-transform duration-300 ease-out {mobileSheetState ===
 			'collapsed'
 				? ''
-				: 'h-[85vh]'} {mobileSheetState === 'detail' ? 'hidden' : ''}"
+				: 'h-[85dvh]'} {mobileSheetState === 'detail' ? 'hidden' : ''}"
 			in:slide={{ axis: 'y', duration: 300 }}
 		>
 			<!-- Always visible: CategoryFilter and ResultsCount -->
@@ -439,7 +439,7 @@
 
 		<!-- Detail State -->
 		<div
-			class="pb-safe flex max-h-[90vh] flex-col bg-surface-50-950 shadow-2xl transition-transform duration-300 ease-out {mobileSheetState !==
+			class="pb-safe flex max-h-[70dvh] flex-col bg-surface-50-950 shadow-2xl transition-transform duration-300 ease-out {mobileSheetState !==
 			'detail'
 				? 'hidden'
 				: ''}"
