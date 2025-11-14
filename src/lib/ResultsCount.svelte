@@ -24,7 +24,7 @@
 		}
 	}
 
-	function handleClick(e: MouseEvent) {
+	function handleClick() {
 		// On mobile, clicking anywhere on the results count should expand the list
 		if (variant === 'mobile' && onExpand) {
 			onExpand();

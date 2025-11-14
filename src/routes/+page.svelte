@@ -38,6 +38,10 @@
 		[8.745117, 52.062623]
 	];
 
+	// Layer IDs
+	const CLUSTERS_LAYER_ID = 'clusters-layer';
+	const LOCATIONS_LAYER_ID = 'locations-layer';
+
 	let center = $state({ lng: 4.237976, lat: 51.011463 });
 	let zoom = $state(7);
 	let cursor: string | undefined = $state();
@@ -113,19 +117,28 @@
 	});
 
 	async function zoomCluster(e: MapMouseEvent) {
-		const features = map!.queryRenderedFeatures(e.point);
-		const clusterId = features[0].properties.cluster_id;
-		const zoom = await source!.getClusterExpansionZoom(clusterId);
-		const center = (features[0].geometry as Point).coordinates;
-		map!.easeTo({
-			around: [center[0], center[1]],
-			zoom
+		// Query only CircleLayer features to avoid SymbolLayer interference
+		const features = map!.queryRenderedFeatures(e.point, {
+			layers: [CLUSTERS_LAYER_ID]
 		});
+		if (features.length > 0) {
+			const feature = features[0];
+			const clusterId = feature.properties.cluster_id;
+			const zoom = await source!.getClusterExpansionZoom(clusterId);
+			const center = (feature.geometry as Point).coordinates;
+			map!.easeTo({
+				around: [center[0], center[1]],
+				zoom
+			});
+		}
 	}
 
 	// Consolidated selection logic - detects mobile vs desktop
 	function selectLocation(e: MapMouseEvent) {
-		const features = map!.queryRenderedFeatures(e.point);
+		// Query only CircleLayer features to avoid SymbolLayer interference
+		const features = map!.queryRenderedFeatures(e.point, {
+			layers: [LOCATIONS_LAYER_ID]
+		});
 		if (features.length > 0) {
 			const feature = features[0];
 			// Only select if it's not a cluster (doesn't have point_count)
@@ -254,6 +267,7 @@
 					bind:source
 				>
 					<CircleLayer
+						id={CLUSTERS_LAYER_ID}
 						filter={['has', 'point_count']}
 						paint={{
 							'circle-color': '#24ad82',
@@ -281,7 +295,7 @@
 					/>
 					<CircleLayer
 						filter={['!', ['has', 'point_count']]}
-						id="locations-layer"
+						id={LOCATIONS_LAYER_ID}
 						paint={{
 							'circle-color': '#24ad82',
 							'circle-radius': 9,
