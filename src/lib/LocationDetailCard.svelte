@@ -1,7 +1,7 @@
 <script lang="ts">
 	import type { Feature } from 'geojson';
 	import type { Point } from 'geojson';
-	import { MapPin, Globe, Navigation } from '@lucide/svelte';
+	import { MapPin, Globe, Navigation, PenLine } from '@lucide/svelte';
 	import CategoryIcon from './CategoryIcon.svelte';
 	import DetailHeader from './DetailHeader.svelte';
 	import type { OnlineOnlyEntry } from '../routes/+page.server';
@@ -25,6 +25,33 @@
 		const locationName = encodeURIComponent(entry.properties?.name || '');
 		const googleMapsUrl = `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}&destination_place_id=${locationName}`;
 		window.open(googleMapsUrl, '_blank');
+	}
+
+	function getSuggestChangeMailtoLink(): string {
+		const name = isFeature(entry) ? entry.properties?.name : entry.name;
+		const address = isFeature(entry) ? entry.properties?.address : null;
+		const postalCode = isFeature(entry) ? entry.properties?.postalCode : null;
+		const city = isFeature(entry) ? entry.properties?.city : null;
+		const coordinates = isFeature(entry) ? entry.geometry.coordinates : null;
+
+		let body = `Naam: ${name || 'Onbekend'}\n`;
+
+		if (coordinates) {
+			const [lng, lat] = coordinates;
+			body += `Coördinaten: ${lat}, ${lng}\n`;
+		}
+
+		if (address) {
+			let fullAddress = address;
+			if (postalCode) fullAddress += `, ${postalCode}`;
+			if (city) fullAddress += ` ${city}`;
+			body += `Adres: ${fullAddress}`;
+		}
+
+		const subject = encodeURIComponent('Aanpassing kaart');
+		const bodyEncoded = encodeURIComponent(body);
+
+		return `mailto:kaart@wijdelen.be?subject=${subject}&body=${bodyEncoded}`;
 	}
 </script>
 
@@ -103,6 +130,19 @@
 					<!-- eslint-enable svelte/no-navigation-without-resolve -->
 				</div>
 			{/if}
+
+			<!-- Suggest Change Button -->
+			<div class="mt-5 flex items-center gap-2 text-xs">
+				<!-- eslint-disable svelte/no-navigation-without-resolve -->
+				<a
+					href={getSuggestChangeMailtoLink()}
+					class="flex items-center anchor text-surface-600 hover:text-surface-600"
+				>
+					<PenLine size={12} class="mr-2 shrink-0 stroke-surface-600" />
+					suggereer een aanpassing
+				</a>
+				<!-- eslint-enable svelte/no-navigation-without-resolve -->
+			</div>
 		</div>
 	</div>
 </div>
