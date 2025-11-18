@@ -43,9 +43,15 @@
 									rel="noopener noreferrer"
 								>
 									Green Deal Huren &amp; Delen
-								</a>.<br />Wil je ook zichtbaar zijn op deze huur- en deelkaart?
+								</a>.<br />Wil je ook zichtbaar zijn op deze huur- en deelkaart? Stuur
+								<a
+									class="anchor"
+									href="mailto:kaart@wijdelen.be?subject=Locatie%20toevoegen&body=Vermeld%20aub%3A%0A%0A-%20Naam%20%3A%20%0A%0A-%20Korte%20beschrijving%20%3A%20%0A%0A-%20Adres%20%3A%20%0A%0A-%20Co%C3%B6rdinaten%20(lon/lat)%20%3A%20%0A"
+									target="_blank">een mailtje</a
+								>
+								of maak een afspraak in
 								<a class="anchor" href="https://calendly.com/hurendelen/30min" target="_blank"
-									>Maak een afspraak in ons loket.</a
+									>ons loket.</a
 								>
 							</span>
 						</span>
